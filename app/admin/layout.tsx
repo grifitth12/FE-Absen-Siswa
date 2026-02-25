@@ -25,20 +25,18 @@ export const viewport: Viewport = {
   themeColor: '#0f172a',
 }
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
-        <AppSidebar />
-        <Header />
-        <main className="ml-64 mt-16 p-8 bg-slate-50 min-h-screen">
-          {children}
-        </main>
-      </body>
-    </html>
+    <>
+      <AppSidebar />
+      <Header />
+      <main className="ml-64 mt-16 p-8 bg-slate-50 min-h-screen">
+        {children}
+      </main>
+    </>
   )
 }

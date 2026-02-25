@@ -1,6 +1,8 @@
 import { ApiError, ApiResponse } from './types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://reihan.biz.id/api/v1'
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>
@@ -48,28 +50,22 @@ export async function apiCall<T>(
   }
 }
 
-// Token API calls
 export const tokenAPI = {
   getAll: () => apiCall('/tokens'),
   getOne: (id: string) => apiCall(`/tokens/${id}`),
+
   create: (payload: {
-    validityHours: number
+    duration: number
+    late_after: number
   }) =>
-    apiCall('/tokens', {
+    apiCall('/token/create', {
       method: 'POST',
-      body: JSON.stringify(payload),
-    }),
-  delete: (id: string) =>
-    apiCall(`/tokens/${id}`, {
-      method: 'DELETE',
-    }),
-  update: (id: string, payload: Record<string, any>) =>
-    apiCall(`/tokens/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        duration: payload.duration,
+        late_after: payload.late_after,
+      }),
     }),
 }
-
 // Attendance API calls
 export const attendanceAPI = {
   getStats: () => apiCall('/attendance/stats'),

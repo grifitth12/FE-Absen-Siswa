@@ -1,17 +1,19 @@
 // Token types
 export interface Token {
-  id: string
-  name: string
-  type: 'attendance' | 'event' | 'custom'
-  token: string
+  id: number
+  token_code: string
+  is_active: boolean
+  validUntil: string
   createdAt: string
-  expiresAt: string
-  status: 'active' | 'expired' | 'revoked'
-  usageCount?: number
+  created_by: {
+    id: number
+    full_name: string
+  }
 }
 
 export interface TokenRequest {
-  validityHours: number
+  duration: number
+  late_after: number
 }
 
 export interface TokenResponse {

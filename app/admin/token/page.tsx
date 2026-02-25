@@ -94,53 +94,6 @@ export default function TokenGenerationPage() {
           <TokenGenerationForm onTokenGenerated={handleTokenGenerated} />
         </motion.div>
       </motion.div>
-
-      {/* Token History */}
-      <motion.div variants={itemVariants} className="space-y-4">
-        <TokenHistoryTable
-          tokens={tokens}
-          loading={tokensLoading}
-          onDelete={handleDelete}
-        />
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft size={16} />
-              Previous
-            </Button>
-
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (pageNum) => (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setPage(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                )
-              )}
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-              <ChevronRight size={16} />
-            </Button>
-          </div>
-        )}
-      </motion.div>
     </motion.div>
   )
 }

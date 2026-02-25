@@ -45,7 +45,7 @@ export function AppSidebar() {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-slate-700">
-        {!collapsed && <h1 className="text-xl font-bold">AdminDash</h1>}
+        {!collapsed && <h1 className="text-xl font-bold">Dashboard</h1>}
         <Button
           variant="ghost"
           size="icon"

@@ -38,18 +38,32 @@ export function useGenerateToken() {
   const [error, setError] = useState<string | null>(null)
   const [generatedToken, setGeneratedToken] = useState<Token | null>(null)
 
-  const generate = async (payload: TokenRequest) => {
-    setLoading(true)
-    setError(null)
+const generate = async (
+  payload: TokenRequest
+): Promise<Token | null> => {
+  setLoading(true)
+  setError(null)
+
+  try {
     const result = await tokenAPI.create(payload)
-    if ('data' in result && result.success) {
-      setGeneratedToken(result.data || null)
+
+    console.log("API RESULT:", result)
+
+    // Karena backend kirim { data: {...}, message: ... }
+    if ('data' in result && result.data) {
+      setGeneratedToken(result.data)
       return result.data
-    } else {
-      setError(result.message || 'Failed to generate token')
-      return null
     }
+
+    setError(result.message || 'Failed to generate token')
+    return null
+  } catch (err) {
+    setError('Something went wrong')
+    return null
+  } finally {
+    setLoading(false)
   }
+}
 
   const reset = () => {
     setGeneratedToken(null)

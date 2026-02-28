@@ -1,6 +1,6 @@
 import { LoginCredentials, LoginResponse, User } from '@/types/auth.types';
 
-const API_BASE_URL = 'https://www.reihan.biz.id/api/v1';
+const API_BASE_URL = '/api/v1';
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
@@ -14,7 +14,7 @@ export const authAPI = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error.error || error.message || 'Login failed');
     }
 
     const data: LoginResponse = await response.json();
@@ -42,13 +42,12 @@ export const authAPI = {
     });
 
     if (!response.ok) {
-      // Token might be invalid or expired
       localStorage.removeItem('authToken');
       return null;
     }
 
-    const data: User = await response.json();
-    return data;
+    const responseData = await response.json();
+    return responseData.data as User;
   },
 
   submitAbsenToken: async (tokenCode: string): Promise<{ message: string; status: string }> => {
@@ -76,7 +75,6 @@ export const authAPI = {
   },
 
   logout: (): void => {
-    // Clear local storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   },

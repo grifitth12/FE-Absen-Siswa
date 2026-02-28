@@ -48,7 +48,6 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSubmittingToken, setIsSubmittingToken] = useState(false);
 
-  // Get auth functions from context
   const { login, submitAbsen } = useAuth();
 
   const loginForm = useForm<LoginFormData>({
@@ -72,14 +71,16 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      await login({
+      const userData = await login({
         nisn: data.nisn,
         password: data.password,
       });
 
-      setShowTokenModal(true);
-      setTokenError("");
-      tokenForm.reset();
+      if (userData && userData.role === 'siswa') {
+        setShowTokenModal(true);
+        setTokenError("");
+        tokenForm.reset();
+      }
     } catch (error) {
       const message =
         error instanceof Error

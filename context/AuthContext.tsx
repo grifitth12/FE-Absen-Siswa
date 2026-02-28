@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<User | null>;
   logout: () => void;
   submitAbsen: (tokenCode: string) => Promise<{ message: string; status: string }>;
 }
@@ -35,41 +35,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      // Try to get current user
-      const currentUser = await authAPI.getCurrentUser();
-      
+      let currentUser: User | null = null;
+      const cachedUserStr = localStorage.getItem('user');
+
+      if (cachedUserStr) {
+        const cachedUser = JSON.parse(cachedUserStr) as User;
+        if (cachedUser.role === 'guru' || cachedUser.role === 'admin') {
+          currentUser = cachedUser;
+        }
+      }
+
+      if (!currentUser) {
+        currentUser = await authAPI.getCurrentUser();
+      }
+
       if (currentUser) {
         setUser(currentUser);
       } else {
-        // Token invalid, clear it
         localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginCredentials): Promise<User | null> => {
     try {
       setIsLoading(true);
       
       // Login and get token
-      await authAPI.login(credentials);
+      const loginData = await authAPI.login(credentials);
       
-      // Fetch user data with the token
-      const userData = await authAPI.getCurrentUser();
+      let userData: User | null = null;
+
+      if (loginData.role === 'guru' || loginData.role === 'admin') {
+        userData = {
+           id: 0,
+           nisn: credentials.nisn,
+           fullname: 'Admin/Guru',
+           username: 'admin',
+           role: loginData.role,
+           class_group: '',
+           message: loginData.Message || 'success'
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        userData = await authAPI.getCurrentUser();
+        if (userData) {
+           localStorage.setItem('user', JSON.stringify(userData));
+        }
+      }
       
       if (userData) {
         setUser(userData);
-        // Redirect to main page after successful login
-        router.push('/'); // Change to wherever you want students to land
+        if (userData.role === 'guru' || userData.role === 'admin') {
+          router.push('/admin');
+        }
+        // Siswa stays on current page for token input
       }
+      return userData;
     } catch (error) {
       console.error('Login error:', error);
-      throw error; // Re-throw so login form can show error
+      throw error;
     } finally {
       setIsLoading(false);
     }

@@ -130,16 +130,15 @@ export function useAvailableDepartments() {
   return { departments, loading, error }
 }
 
+
 export function useExportData() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const exportToExcel = async (filters: {
-    exportType: string
     classId?: string
     departmentId?: string
-    startDate?: string
-    endDate?: string
+    attendanceDate?: string
   }) => {
     setLoading(true)
     setError(null)
@@ -180,9 +179,8 @@ export function useExportData() {
 
       return { success: true, data: [] }
     } catch (err) {
-      const errorMessage =
+      const message =
         err instanceof Error ? err.message : 'Export failed'
-      setError(errorMessage)
 
       return { success: false, data: null }
     } finally {

@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-// Validation schemas
 const loginSchema = z.object({
   nisn: z.string().min(1, "Nomor Induk harus diisi"),
   password: z.string().min(1, "Password harus diisi"),
@@ -99,7 +98,6 @@ export default function LoginPage() {
     setTokenError("");
 
     try {
-      // Don't store result if you're not using it
       await submitAbsen(data.token);
 
       setShowTokenModal(false);

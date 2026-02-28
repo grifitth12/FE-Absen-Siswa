@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { authAPI } from '@/api/auth';
-import { User, LoginCredentials } from '@/types/auth.types';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/api/auth";
+import { User, LoginCredentials, LoginResponse } from "@/types/auth.types";
 
 interface AuthContextType {
   user: User | null;
@@ -21,7 +28,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Check if user is logged in on mount
   useEffect(() => {
     checkAuth();
   }, []);
@@ -61,14 +67,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
-    }
-  };
+    };
+
+    initAuth();
+  }, []);
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<User | null> => {
     try {
       setIsLoading(true);
       
-      // Login and get token
       const loginData = await authAPI.login(credentials);
       
       let userData: User | null = null;
@@ -96,7 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (userData.role === 'guru' || userData.role === 'admin') {
           router.push('/admin');
         }
-        // Siswa stays on current page for token input
+        
       }
       return userData;
     } catch (error) {
@@ -105,25 +112,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, []);
 
   const logout = useCallback(() => {
     authAPI.logout();
     setUser(null);
-    router.push('/login');
+    router.push("/login");
   }, [router]);
 
   const submitAbsen = useCallback(async (tokenCode: string) => {
-    try {
-      const result = await authAPI.submitAbsenToken(tokenCode);
-      return result;
-    } catch (error) {
-      console.error('Absen submission error:', error);
-      throw error;
-    }
+    return authAPI.submitAbsenToken(tokenCode);
   }, []);
 
-  const contextValue = useMemo(
+  const value = useMemo(
     () => ({
       user,
       isAuthenticated: !!user,
@@ -135,17 +136,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [user, isLoading, login, logout, submitAbsen]
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };

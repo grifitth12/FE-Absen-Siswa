@@ -1,13 +1,14 @@
-import { LoginCredentials, LoginResponse, User } from '@/types/auth.types';
+
+import { LoginCredentials, LoginResponse, User } from "@/types/auth.types";
 
 const API_BASE_URL = '/api/v1';
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(credentials),
     });
@@ -17,27 +18,36 @@ export const authAPI = {
       throw new Error(error.error || error.message || 'Login failed');
     }
 
-    const data: LoginResponse = await response.json();
-    
-    // Store the access token
-    if (data.access_token) {
-      localStorage.setItem('authToken', data.access_token);
+    const data = await response.json();
+
+    console.log("LOGIN RESPONSE:", data);
+
+    const token =
+      data.access_token ??
+      data.accessToken ??
+      data.token ??
+      data?.data?.access_token;
+
+    if (!token) {
+      throw new Error("Token tidak ditemukan di response backend");
     }
-    
-    return data;
+
+    localStorage.setItem("authToken", token);
+
+    return {
+      message: data.message,
+      access_token: token,
+      role: data.role,
+    };
   },
 
   getCurrentUser: async (): Promise<User | null> => {
-    const token = localStorage.getItem('authToken');
-    
-    if (!token) {
-      return null;
-    }
+    const token = localStorage.getItem("authToken");
+    if (!token) return null;
 
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -50,25 +60,24 @@ export const authAPI = {
     return responseData.data as User;
   },
 
-  submitAbsenToken: async (tokenCode: string): Promise<{ message: string; status: string }> => {
-    const token = localStorage.getItem('authToken');
-    
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
+  submitAbsenToken: async (
+    tokenCode: string
+  ): Promise<{ message: string; status: string }> => {
+    const token = localStorage.getItem("authToken");
+    if (!token) throw new Error("Not authenticated");
 
     const response = await fetch(`${API_BASE_URL}/token/absen`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ token_code: tokenCode }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to submit attendance');
+      throw new Error(error.message || "Failed submit absen");
     }
 
     return response.json();
